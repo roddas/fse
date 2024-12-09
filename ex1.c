@@ -8,14 +8,84 @@
 void solicitacao_integer(void);
 void solicitacao_float(void);
 void solicitacao_string(void);
+void envio_integer(int );
 
 int main() {
-	solicitacao_integer();
-	solicitacao_float();
-	solicitacao_string();
+	//solicitacao_integer();
+	//solicitacao_float();
+	//solicitacao_string();
+	envio_integer(1234);
 	return 0;
 }
 
+void envio_integer(int number){
+	    int uart0_filestream = -1;
+
+    uart0_filestream = open("/dev/serial0", O_RDWR | O_NOCTTY | O_NDELAY); // Open in non blocking read/write mode
+    if (uart0_filestream == -1)
+    {
+        printf("Erro - Não foi possível iniciar a UART.\n");
+    }
+    struct termios options;
+    tcgetattr(uart0_filestream, &options);
+    options.c_cflag = B9600 | CS8 | CLOCAL | CREAD; //<Set baud rate
+    options.c_iflag = IGNPAR;
+    options.c_oflag = 0;
+    options.c_lflag = 0;
+    tcflush(uart0_filestream, TCIFLUSH);
+    tcsetattr(uart0_filestream, TCSANOW, &options);
+
+    unsigned char tx_buffer[255];
+    unsigned char *p_tx_buffer;
+    char digits[5];
+    snprintf(digits,5,"%d",number);
+   
+    p_tx_buffer = &tx_buffer[0];
+    *p_tx_buffer++ = 0xb1;
+    *p_tx_buffer++ = digits[0] - '0';
+    *p_tx_buffer++ = digits[1] - '0';
+    *p_tx_buffer++ = digits[2] - '0';
+    *p_tx_buffer++ = digits[3] - '0';
+    *p_tx_buffer++ = 1;
+    *p_tx_buffer++ = 8;
+    *p_tx_buffer++ = 0;
+    *p_tx_buffer++ = 0;
+
+    if (uart0_filestream != -1)
+    {
+        int count = write(uart0_filestream, &tx_buffer, (p_tx_buffer - &tx_buffer[0]));
+        if (count <= 0)
+        {
+            printf("UART TX error\n");
+        }
+    }
+
+    sleep(1);
+
+    //----- CHECK FOR ANY RX BYTES -----
+    if (uart0_filestream != -1)
+    {
+        // Read up to 255 characters from the port if they are there
+        int rx_buffer;
+        int rx_length = read(uart0_filestream, &rx_buffer, 255); // Filestream, buffer to store in, number of bytes to read (max)
+        if (rx_length < 0)
+        {
+            printf("Erro na leitura.\n"); // An error occured (will occur if there are no bytes)
+        }
+        else if (rx_length == 0)
+        {
+            printf("Nenhum dado disponível.\n"); // No data waiting
+        }
+        else
+        {
+            // Bytes received
+	     //printf("%d bytes received\n",rx_length);
+            printf("Envia INT (0xB1 + %d) - Retorno = %d\n",number , rx_buffer);
+        }
+    }
+
+    close(uart0_filestream);
+}
 
 void solicitacao_string(void){
 	int uart0_filestream = -1;
