@@ -10,14 +10,15 @@ void solicitacao_integer(void);
 void solicitacao_float(void);
 void solicitacao_string(void);
 void envio_integer(int );
+void envio_float(float);
 void envio_string(char *);
 
 int main() {
-	//solicitacao_integer();
-	//solicitacao_float();
-	//solicitacao_string();
-	//envio_integer(1234);
-	//envio_float(1234);
+	solicitacao_integer();
+	solicitacao_float();
+	solicitacao_string();
+	envio_integer(1234);
+	envio_float(1234);
 	envio_string("Muntu wambote");
 	return 0;
 }
@@ -419,8 +420,6 @@ void solicitacao_integer(void){
     close(uart0_filestream);
 }
 
-
-
 /*
 ===============
 OUTPUT
@@ -437,7 +436,4 @@ https://gitlab.com/fse_fga/raspberry-pi/exercicios/exercicio-1-uart
 https://youtube.com/live/OSB10KSw3zw?feature=share
 https://gitlab.com/fse_fga/raspberry-pi/uart_raspberry_pi/-/tree/master/c/src?ref_type=heads
 ===================
-ssh rodolfoneves@164.41.98.26  -p 13508
-
-
 */
